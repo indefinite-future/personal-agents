@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+
+# Build Output
+dist/
