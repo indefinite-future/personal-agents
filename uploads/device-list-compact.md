@@ -3,6 +3,8 @@
 This is a compact, high-density reference of all Quad Cortex devices and their parameters.
 Use this document as a strict reference for exact device names and parameter structures.
 
+**Editing policy:** Do not add preset-specific rows here (no "worked examples," user baseline snapshots, A/B presets, or project tone recipes). Keep this file limited to authoritative device identifiers and parameter schemas: control names, value ranges, units, and neutral factory-style defaults inlined on controls where known. Share illustrative settings in chat or a separate preset document.
+
 ---
 
 ## Category Parameter Templates
@@ -18,14 +20,54 @@ Below are the standard parameter layouts, ranges, and units for key categories. 
 - **Depth / Resonance** [0.0 - 10.0] - Low-frequency response in power amp feedback loop.
 - **Master** [0.0 - 10.0] - Power amp volume / saturation.
 
-### 2. Guitar & Bass Cabinets (Dual / Single)
-- **Microphone (Mic)** [Dynamic / Condenser / Ribbon] - Selection of microphone model.
-- **Position** [0.00 - 10.00] - Distance from center of speaker cone to edge.
-- **Distance** [0.00 - 10.00 cm] - Distance of the microphone from the grille.
-- **Low Cut** [20.0 Hz - 500.0 Hz] - High-pass filter.
-- **High Cut** [500.0 Hz - 20.0 kHz] - Low-pass filter.
-- **Level** [-inf dB to +12.0 dB] - Output volume of the cab block.
-- **Pan** [100L - Center - 100R] - Stereo panning.
+### 2. Guitar & Bass Cabinets (Cabsim block)
+Mono **(M)** and stereo **(ST)** cab blocks share the same parameter set. Factory cabs expose up to **two virtual mic slots** (Mic A / Mic B) on a speaker graphic. CorOS **2.1.0+** redesigned the Cabsim editor; parameter order follows the footswitch row on hardware.
+
+#### Per-mic slot (Mic A / Mic B)
+Select a slot on the cabinet display (or mic tab) to edit that mic.
+
+- **Mic** — Factory virtual microphone model, or **Load IR** (third-party impulse). Factory mics listed below.
+- **Level** [dB] — Per-mic volume in the blend. Minimum is **OFF** (CorOS 2.1.0+ label; formerly shown as about **−12 dB**). Maximum about **+12 dB**. **OFF** mutes that mic slot.
+- **Position** [0.00 – 10.00] — Virtual mic position on the speaker cone. **0** = cap center (brightest). **10** = cone edge (darker, less bite). Drag the mic icon on the cabinet graphic; the knob follows.
+- **Distance** [0.00 – 10.00 cm] — Distance from the grille. **Low** = close / more proximity bass and bite. **High** = farther / more room, less proximity effect.
+- **Pan (M)** [100L – Center – 100R] — Mono cab blocks only. Pans that mic in the mono mix.
+- **Balance (ST)** — Stereo cab blocks only. Left/right balance for that mic within the stereo cab image.
+- **Phase** — **OFF** / **ON** — **Phase invert** (UI icon: circle with slash, Ø). Flips that mic **180°**. Use when blending **two active mics** if the mix sounds hollow, thin, or quieter than expected (phase cancellation from different distances/positions). With **one mic active**, toggling Phase usually makes **no audible difference**. Inverting **both** mics sounds the same as inverting **neither**.
+
+**Disabled when a custom IR is loaded in that mic slot:** **Position** and **Distance** (IR is a fixed capture; only Level, Phase, Pan/Balance, and filters still apply).
+
+#### Block-level (shared cab controls)
+These apply to the **combined cab output** after mic blending (shown once below the mic slots in the editor):
+
+- **HPF** (high-pass / low cut) [≈ 20 Hz – 500 Hz] — Removes low frequencies. **Higher cutoff** = less bass / mud. Typical headphone starting point: **80–100 Hz**.
+- **LPF** (low-pass / high cut) [≈ 500 Hz – 20 kHz] — Removes high frequencies. **Lower cutoff** = less treble / fizz. Typical smooth-lead starting point: **6000–7500 Hz** on headphones.
+- **Output** — Block output trim for the entire cab block (post-mic mix). Use to match level to the rest of the chain without changing amp gain.
+
+#### Speaker / mic enable controls (cab graphic)
+- **Speaker toggles** — On multi-driver factory cabs (e.g. 2×12, 4×12), switches **beside each mic/speaker slot** **enable or disable** that speaker voice in the simulation. Turn off unused speakers to save CPU or simplify tone.
+- **Phase button (Ø)** — On the cabinet graphic, the **small button on or between each mic icon** is the **Phase** switch for that mic (not a mute). It does **not** bypass the whole cab block; use block **Bypass** or set **Level → OFF** to mute a mic.
+
+#### Mono vs stereo routing
+- **Mono (M) cab:** Collapses incoming stereo to mono. In a stereo upstream path, **Mic A** takes the **left** side and **Mic B** the **right** side of the preceding block.
+- **Stereo (ST) cab:** Processes **L and R independently**. Each side runs through both mic slots for a true stereo cab image.
+
+#### Factory virtual microphones (all cab blocks)
+Neural DSP uses numbered shorthand, not trademarked names. Industry-standard references:
+
+| QC menu label | Type | Based on (reference) | Character (cab use) |
+|---|---|---|---|
+| **Dynamic 57** | Dynamic | Shure® SM57® | Mid-forward bite; classic on-axis cap tone. Brightest factory dynamic — use off-axis or blend for smooth leads. |
+| **Dynamic 421** | Dynamic | Sennheiser® MD421® | Fuller low-mids, softer top than 57; good body when blended with a ribbon. |
+| **Ribbon 10** | Ribbon | Royer® R-10® | Warm ribbon body, smooth highs; compact R-121-family character. Best default ribbon for soft, singing leads on headphones. |
+| **Ribbon 160** | Ribbon | Beyerdynamic® M 160® | Hypercardioid “ribbon-style” dynamic; tight, focused, less fizzy than 57 at the cap. |
+| **Condenser 414** | Condenser | AKG® C414® | Extended highs and air; can sound sharp on-axis — use off-axis + LPF on headphones. |
+| **Condenser 184** | Condenser | Neumann® KM 184® | Small-diaphragm detail and articulation; brighter in upper mids — blend low or stay off-axis. |
+
+Notes:
+- QC labels mics **Dynamic**, **Ribbon**, or **Condenser** plus the model number (e.g. **Ribbon 10**, **Dynamic 57**).
+- **Ribbon 10** → Royer R-10. Some older plugin docs list **Ribbon 121** (R-121) instead; use the label your CorOS build shows.
+- **Ribbon 160** → Beyerdynamic M 160 (dynamic double-ribbon design); QC groups it under Ribbon.
+- Plugin-only extras (e.g. Dynamic 409, Condenser U47) are outside the six factory mics above.
 
 ### 3. Guitar Overdrives, Fuzzes & Drives
 - **Gain / Drive** [0.0 - 10.0] - Level of clipping/distortion.
@@ -51,6 +93,8 @@ Below are the standard parameter layouts, ranges, and units for key categories. 
 ---
 
 ## Devices by Category
+
+Follow the **Editing policy** at the top of this file.
 
 You can manually document specific parameters and units for any device below using markdown. For example:
 ```markdown
@@ -917,7 +961,14 @@ You can manually document specific parameters and units for any device below usi
 ### Brit 900 Lead
 - **Based on:** *Marshall® JCM900® 4100*
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Gain** [0.0 – 10.0] — Preamp / input gain and saturation.
+  - **Bass** [0.0 – 10.0] — Low-frequency shelving EQ.
+  - **Middle** [0.0 – 10.0] — Mid-frequency peak EQ.
+  - **Treble** [0.0 – 10.0] — High-frequency shelving EQ.
+  - **Presence** [0.0 – 10.0] — High-frequency content in power-amp feedback path.
+  - **Master** [0.0 – 10.0] — Power amp level / saturation.
+  - **Output** [−40.0 dB – 12.0 dB] — Block output trim (*default 0 dB*).
 
 ### Brit Plexi 100 Bright
 - **Based on:** *Marshall® Super Lead 100®*
@@ -1297,7 +1348,11 @@ You can manually document specific parameters and units for any device below usi
 ### US Prince
 - **Based on:** *Fender® Blackface Princeton Reverb®*
 - **CorOS:** 1.3.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Volume** [0.0 – 10.0] — Preamp gain and saturation.
+  - **Bass** [0.0 – 10.0] — Low-frequency EQ.
+  - **Treble** [0.0 – 10.0] — High-frequency EQ.
+  - **Output** — **OFF**, or **−40.0 dB – 12.0 dB** — Block output trim.
 
 ### US SPR Normal
 - **Based on:** *Fender® Super Reverb® ‘65*
@@ -1337,7 +1392,13 @@ You can manually document specific parameters and units for any device below usi
 ### US TWN Vibrato
 - **Based on:** *Fender® Twin Reverb®*
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Volume** [0.0 – 10.0] — Preamp gain and saturation.
+  - **Bass** [0.0 – 10.0] — Low-frequency EQ.
+  - **Middle** [0.0 – 10.0] — Mid-frequency EQ.
+  - **Treble** [0.0 – 10.0] — High-frequency EQ.
+  - **Bright** — **OFF** / **ON** — Bright switch (input cap / treble emphasis).
+  - **Output** — **OFF**, or **−40.0 dB – 12.0 dB** — Block output trim.
 
 ### Victor Squid Ch1
 - **Based on:** *Victory Amps® Kraken® Ch1*
@@ -1854,7 +1915,10 @@ You can manually document specific parameters and units for any device below usi
 ### Green 808
 - **Based on:** *Ibanez® TS808®*
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Overdrive** [0.0 – 10.0] — Clipping / drive amount (*default 5*).
+  - **Tone** [0.0 – 10.0] — Treble-heavy EQ tilt (*default 5*).
+  - **Level** [0.0 – 10.0] — Output level (*default 5*).
 
 ### Ibanez® TS808®
 - **Based on:** *1.0.0*
@@ -1869,7 +1933,10 @@ You can manually document specific parameters and units for any device below usi
 ### Myth Drive
 - **Based on:** *Klon® Centaur®*
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Gain** [0.0 – 10.0] — Clean-blend clipped stage amount (*default 5*).
+  - **Treble** [0.0 – 10.0] — Bright tilt (*default 5*).
+  - **Level** [0.0 – 10.0] — Output level (*default 5*).
 
 ### No-Bell OD1
 - **Based on:** *Nobels® ODR-1®*
@@ -1973,7 +2040,14 @@ You can manually document specific parameters and units for any device below usi
 
 ### Simple Delay
 - **CorOS:** 2.1.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Feedback** [0% – 100%] — Repeat amount.
+  - **Tone** [0% – 100%] — High-frequency roll-off on repeats.
+  - **Sync** — **OFF** / **ON** — Switches between free-running time and tempo-synced note value.
+  - **Time** [7.0 ms – 6000.0 ms] — Delay time (*Sync OFF*).
+  - **Sync Note** — Note subdivision for delay time (*Sync ON*).
+  - **Trails** — **OFF** / **ON** — Repeats continue after block bypass / preset change.
 
 ### Tape Delay
 - **CorOS:** 2.1.0
@@ -2001,7 +2075,13 @@ You can manually document specific parameters and units for any device below usi
 
 ### Hall
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Decay** [1.0 s – 10.0 s] — Reverb tail length.
+  - **Pre-Delay** [1.0 ms – 100.0 ms] — Delay before reverb onset.
+  - **High Pass** [20.0 Hz – 800.0 Hz] — Low-frequency roll-off.
+  - **Low Pass** [800.0 Hz – 12.0 kHz] — High-frequency roll-off.
+  - **Trails** — **OFF** / **ON** — Reverb tail continues after block bypass / preset change.
 
 ### Mind Hall
 - **CorOS:** 1.2.0
@@ -2038,21 +2118,41 @@ You can manually document specific parameters and units for any device below usi
 
 ### Spring (M)
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Damping** [0% – 100%] — Spring decay damping / high-frequency loss in the tank.
+  - **Tone** [0% – 100%] — Brightness of the spring character.
+  - **Boing** [0% – 100%] — Spring “bounce” / drip intensity.
+  - **Trails** — **OFF** / **ON** — Reverb tail continues after block bypass / preset change.
 
 ### Spring (ST)
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Damping** [0% – 100%] — Spring decay damping / high-frequency loss in the tank.
+  - **Tone** [0% – 100%] — Brightness of the spring character.
+  - **Boing** [0% – 100%] — Spring “bounce” / drip intensity.
+  - **Trails** — **OFF** / **ON** — Reverb tail continues after block bypass / preset change.
 
 ### Spring Reverb
 - **Based on:** *Spring Reverb Engine (M)*
 - **CorOS:** 3.3.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Damping** [0% – 100%] — Spring decay damping / high-frequency loss in the tank.
+  - **Tone** [0% – 100%] — Brightness of the spring character.
+  - **Boing** [0% – 100%] — Spring “bounce” / drip intensity.
+  - **Trails** — **OFF** / **ON** — Reverb tail continues after block bypass / preset change.
 
-### 3.3.0
+### Spring Reverb (ST)
 - **Based on:** *Spring Reverb Engine (ST)*
 - **CorOS:** 3.3.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Damping** [0% – 100%] — Spring decay damping / high-frequency loss in the tank.
+  - **Tone** [0% – 100%] — Brightness of the spring character.
+  - **Boing** [0% – 100%] — Spring “bounce” / drip intensity.
+  - **Trails** — **OFF** / **ON** — Reverb tail continues after block bypass / preset change.
 
 ### Studio Plate 70 (ST)
 - **Based on:** *Lexicon® PCM70™ Rich Plate programs*
@@ -2070,7 +2170,12 @@ You can manually document specific parameters and units for any device below usi
 ### Jewel
 - **Based on:** *Diamond® Compressor®*
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **COMP** [0.0 – 10.0] — Compression amount.
+  - **EQ** [0.0 – 10.0] — Tilt EQ (treble emphasis vs. bass emphasis).
+  - **Volume** [0.0 – 10.0] — Output level.
+  - **High Cut** — **OFF** / **ON** — High-frequency roll-off.
+  - **Mix** [0% – 100%] — Dry/wet balance.
 
 ### Legendary 87
 - **Based on:** *Universal Audio® 1176®*
@@ -2089,15 +2194,33 @@ You can manually document specific parameters and units for any device below usi
 
 ### Opto Comp
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Threshold** [−60.0 dB – 12.0 dB] — *default −40 dB*
+  - **Ratio** [2 – 20] — *default 4*
+  - **Attack** [1 ms – 250 ms] — *default 15 ms*
+  - **Release** [50 ms – 1200 ms] — *default 400 ms*
+  - **Makeup** [−48.0 dB – 48.0 dB] — *default +8 dB*
+  - **Mix** [0% – 100%] — *default 100%*
 
 ### Opto Comp (ST)
 - **CorOS:** 1.4.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Threshold** [−60.0 dB – 12.0 dB] — *default −40 dB*
+  - **Ratio** [2 – 20] — *default 4*
+  - **Attack** [1 ms – 250 ms] — *default 15 ms*
+  - **Release** [50 ms – 1200 ms] — *default 400 ms*
+  - **Makeup** [−48.0 dB – 48.0 dB] — *default +8 dB*
+  - **Mix** [0% – 100%] — *default 100%*
 
 ### Opto Comp (S/C)
 - **CorOS:** 3.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Threshold** [−60.0 dB – 12.0 dB] — *default −40 dB*
+  - **Ratio** [2 – 20] — *default 4*
+  - **Attack** [1 ms – 250 ms] — *default 15 ms*
+  - **Release** [50 ms – 1200 ms] — *default 400 ms*
+  - **Makeup** [−48.0 dB – 48.0 dB] — *default +8 dB*
+  - **Mix** [0% – 100%] — *default 100%*
 
 ### Solid State Comp
 - **Based on:** *SSL® Bus*
@@ -2282,7 +2405,16 @@ You can manually document specific parameters and units for any device below usi
 
 ### Vintage Chorus
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Mix** [0% – 100%] — Dry/wet balance.
+  - **Mode** — **Chorus** / **Vibrato** — **Chorus** keeps dry signal in the blend; **Vibrato** is wet pitch modulation only (no dry path).
+  - **Width** [0% – 100%] — Modulation spread / intensity.
+  - **Sync** — **OFF** / **ON** — Switches rate controls between free-running Hz and tempo-synced note values. Independent of **Mode**.
+  - **CHR Rate** [0.3 Hz – 3.0 Hz] — Chorus modulation speed (*Sync OFF*).
+  - **VIB Rate** [3.0 Hz – 13.0 Hz] — Vibrato modulation speed. Always available; independent of **Mode** and **Sync**.
+  - **CHR Note** — **1/8** … **1/1D** — Chorus rate as note subdivision (*Sync ON*).
+  - **VIB Note** — **1/32** … **1/8D** — Vibrato rate as note subdivision (*Sync ON*).
+  - **VIB Depth** [0% – 100%] — Vibrato pitch-deviation amount.
 
 
 ## Morph
@@ -2338,11 +2470,27 @@ You can manually document specific parameters and units for any device below usi
 
 ### Graphic-9
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **65 Hz** [−12.0 dB – +12.0 dB] — Band 1 (fixed center).
+  - **125 Hz** [−12.0 dB – +12.0 dB] — Band 2 (fixed center).
+  - **250 Hz** [−12.0 dB – +12.0 dB] — Band 3 (fixed center).
+  - **500 Hz** [−12.0 dB – +12.0 dB] — Band 4 (fixed center).
+  - **1000 Hz** [−12.0 dB – +12.0 dB] — Band 5 (fixed center).
+  - **2000 Hz** [−12.0 dB – +12.0 dB] — Band 6 (fixed center).
+  - **4000 Hz** [−12.0 dB – +12.0 dB] — Band 7 (fixed center).
+  - **8000 Hz** [−12.0 dB – +12.0 dB] — Band 8 (fixed center).
+  - **16000 Hz** [−12.0 dB – +12.0 dB] — Band 9 (fixed center).
+  - **HPF** — **OFF**, or high-pass corner [20.0 Hz – 500.0 Hz] — Low cut on EQ output.
+  - **LPF** — Low-pass corner [500.0 Hz – 20.0 kHz] — High cut on EQ output.
+  - **Output** [−40.0 dB – +12.0 dB] — Block output trim.
 
 ### 9 Band Graphic EQ
 - **CorOS:** 2.3.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Band 1–9** [−12.0 dB – +12.0 dB] — Fixed-frequency graphic sliders.
+  - **HPF** — **OFF** – **500 Hz** (low cut).
+  - **LPF** — High cut (upper treble roll-off; range varies by build).
+  - **Level / Output** — Block output trim.
 
 ### Low-High Cut
 - **CorOS:** 1.0.0
@@ -2350,7 +2498,12 @@ You can manually document specific parameters and units for any device below usi
 
 ### Parametric-3
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Band 1–3 Type** — **Peak**, **Hi Pass**, **Lo Pass**, **Hi Shelf**, **Lo Shelf**
+  - **Gain** [−12.0 dB – 12.0 dB] — Per-band boost or cut.
+  - **Frequency** [20.0 Hz – 20.0 kHz] — Center or corner frequency per band.
+  - **Q** [0.1 – 10.0] — Bandwidth (Peak / Shelf) or slope (Pass filters).
+  - **Output** [−20.0 dB – 20.0 dB] — Block output trim.
 
 ### Parametric-8
 - **CorOS:** 1.0.0
@@ -2458,11 +2611,14 @@ You can manually document specific parameters and units for any device below usi
 
 ### Adaptive Gate
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Noise Reduction** [0% – 100%]
 
 ### Adaptive Gate (S/C)
 - **CorOS:** 3.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Noise Reduction** [0% – 100%]
+  - **Source / path selection**
 
 ### Gain
 - **CorOS:** 1.0.0
@@ -2474,7 +2630,12 @@ You can manually document specific parameters and units for any device below usi
 
 ### Utility Gate
 - **CorOS:** 1.0.0
-- **Parameters:** (Add custom parameters here)
+- **Parameters:**
+  - **Threshold** [−90.0 dB – 0.0 dB]
+  - **Attack** [1 ms – 1000 ms]
+  - **Hold** [10 ms – 2000 ms]
+  - **Release** [2 ms – 5000 ms]
+  - **Range** — **OFF**, or attenuation floor **−90.0 dB** to **−6.0 dB** when gated
 
 ### Volume
 - **CorOS:** 2.1.0
